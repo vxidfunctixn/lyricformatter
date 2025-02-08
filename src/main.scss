@@ -1,8 +1,10 @@
-$backgrund-color: rgb(10, 6, 20);
+$backgrund-color: hsl(340, 80%, 6%);
+$accent-color: hsl(340, 90%, 37%);
+$highlight-color: hsl(340, 86%, 3%);
 $font-color: white;
-$border-color: gray;
+$border-color: rgba(white, 0.15);
 
-@import url('https://fonts.googleapis.com/css?family=Quicksand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 *, *:before, *:after {
    box-sizing: border-box;
@@ -11,32 +13,19 @@ $border-color: gray;
 body {
    background-color: $backgrund-color;
    color: $font-color;
-   font-family: 'Quicksand', sans-serif;
-   font-size: 18px;
-   line-height: 1.5em;
+   font-family: 'Roboto', serif;
+   font-size: 24px;
+   line-height: 32px;
    margin: 0;
    height: 100vh;
 }
 
-.row {
-   height: 100vh;
-   position: relative;
+::selection {
+   background-color: $accent-color;
+}
 
-   .col {
-      height: 100vh;
-      width: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-   }
-
-   .col:nth-child(1) {
-      z-index: 0;
-   }
-   .col:nth-child(2) {
-      z-index: 1;
-      pointer-events: none;
-   }
+.wrapper {
+   max-height: 100dvh;
 }
 
 @mixin scrollbar {
@@ -58,25 +47,28 @@ body {
 }
 
 #text {
+   position: absolute;
+   left: 90px;
+   width: calc(100% - 90px);
    background-color: transparent;
    color: $font-color;
-   font-family: 'Quicksand', sans-serif;
-   width: 100%;
+   font-family: 'Roboto', serif;
    height: calc(100vh);
    border: none;
    padding: 15px;
-   padding-left: 90px;
-   font-size: 18px;
-   line-height: 1.5em;
+   padding-left: 6px;
+   font-size: 24px;
+   line-height: 36px;
    outline: none;
    white-space: nowrap;
    resize: none;
    font-display: block;
+   display: block;
 
    @include scrollbar();
 }
 
-#new-text {
+#line-overlay {
    background-color: transparent;
    color: $font-color;
    height: calc(100vh);
@@ -84,35 +76,104 @@ body {
    padding-left: 0;
    overflow: hidden;
    padding-bottom: 100px;
+   width: 100%;
+   pointer-events: none;
 
    .line {
-      height: 1.5em;
+      height: 36px;
       display: flex;
+      align-items: center;
+      position: relative;
 
       .column-data {
          width: 85px;
          display: flex;
-         height: 1.5em;
-         background-color: $backgrund-color;
          padding-left: 20px;
          padding-right: 10px;
          justify-content: space-between;
+         align-items: flex-end;
+         position: relative;
+         background-color: $backgrund-color;
+
+         .verseNumber {
+            font-size: 18px;
+            opacity: 0.6;
+            line-height: 26px;
+         }
+
+         .syllable {
+            text-align: center;
+            font-size: 21px;
+            height: 28px;
+            line-height: 26px;
+            background-color: rgba(white, .15);
+            border: 1px solid rgba(white, .15);
+            padding: 0 4px;
+            border-radius: 6px;
+         }
+
+         .separator {
+            display: block;
+            height: 8px;
+            border-radius: 4px;
+            width: 56px;
+            background-color: rgba(white, 0.15);
+         }
+
+         .header {
+            display: block;
+            height: 8px;
+            border-radius: 4px;
+            width: 56px;
+            background-color: $accent-color;
+         }
+
+         .buckle {
+            --borderColor: #{$border-color};
+            --borderWidth: 2px;
+            display: block;
+            height: 36px;
+            position: absolute;
+            right: 0px;
+            top: -4px;
+            width: 8px;
+            border-right: var(--borderWidth) solid var(--borderColor);
+
+            &.first {
+               height: 18px;
+               top: 14px;
+               border-top-right-radius: 6px;
+               border-top: var(--borderWidth) solid var(--borderColor);
+            }
+
+            &.last {
+               height: 18px;
+               border-bottom-right-radius: 6px;
+               border-bottom: var(--borderWidth) solid var(--borderColor);
+            }
+
+            &.first.last {
+               top: 5px;
+            }
+         }
       }
 
-      .syllable {
-         border: 1px solid $border-color;
-         width: 1.5em;
-         text-align: center;
-         border-radius: 0.75em;
+      &.highlight {
+         &::before {
+            content: "";
+            display: block;
+            background-color: $highlight-color;
+            box-shadow: 0 0 0 2px rgba($accent-color, 0.2);
+            height: 100%;
+            width: calc(100% - 2px);
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: -1;
+         }
 
-         &.red {
-            color: red;
-         }
-         &.yellow {
-            color: yellow;
-         }
-         &.green {
-            color: rgb(47, 255, 64);
+         .column-data {
+            background-color: $highlight-color;
          }
       }
    }
@@ -126,7 +187,8 @@ body {
    right: 20px;
    padding: 5px;
    z-index: 2;
-   color: rgba(white, 0.3);
+   color: $accent-color;
+   opacity: 0.5;
    pointer-events: none;
-   background-color: rgba($backgrund-color, 0.9);
+
 }

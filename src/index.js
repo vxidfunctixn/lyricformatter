@@ -3,18 +3,27 @@ import './main.scss'
 class TextFormater {
    constructor() {
       this.originalText = document.getElementById('text')
-      this.newText = document.getElementById('new-text')
+      this.newText = document.getElementById('line-overlay')
+      this.activeLine = 0
 
       let savedText = this.getSavedText()
       if(savedText) {
          this.originalText.value = savedText
-         this.textChange()
       }
+      this.textChange()
 
       this.originalText.addEventListener('input', () => this.textChange())
+      this.originalText.addEventListener('selectionchange', () => this.textChange())
       this.originalText.addEventListener('scroll', () => this.textScroll())
 
       this.originalText.focus()
+   }
+
+   updateCursorPosition() {
+      const cursorPosition = this.originalText.selectionStart
+      const textBeforeCursor = this.originalText.value.substring(0, cursorPosition)
+      const cursorLine = textBeforeCursor.split("\n").length - 1
+      this.activeLine = cursorLine;
    }
 
    getSavedText() {
@@ -48,14 +57,16 @@ class TextFormater {
             versesCount[versesCount.length - 1].syllable.push(syllable)
          }
 
+         const isHeader = line.trim().startsWith("[") && line.trim().endsWith("]")
+
          lines.push({
             syllable: syllable,
             text: line,
             verseCount: verseCount,
-            versesNumber: versesCount.length - 1
+            isHeader,
          })
 
-         if(syllable === 0 || index === tmpLines.length - 1) {
+         if(syllable === 0 || index === tmpLines.length - 1 || isHeader) {
             verseCount = 1
             versesCount[versesCount.length - 1].avarangeSyllable = this.getAvarangeSyllable(versesCount[versesCount.length - 1].syllable)
             versesCount.push({
@@ -65,47 +76,36 @@ class TextFormater {
          } else {
             verseCount++
          }
+
       })
 
-      lines.forEach(line => {
-         let verses = versesCount[line.versesNumber];
-         let syllablesLevel = 3
-         let colorClass = ''
-         let syllableHTML = ''
-         let verseCountHTML = line.verseCount + '.'
+      this.updateCursorPosition();
+      lines.forEach((line, index) => {
+         const highlightClass = index === this.activeLine ? ' highlight' : '';
 
-         if(line.syllable < (verses.avarangeSyllable - 1) || line.syllable > (verses.avarangeSyllable + 1)) {
-            syllablesLevel--
-         }
-         if(line.syllable % 2 !== 0) {
-            syllablesLevel--
-         }
+         let columnData = `<span class="separator"></span>`
 
-         switch(syllablesLevel) {
-            case 1: {
-               colorClass = 'red'
-               break
-            }
-            case 2: {
-               colorClass = 'yellow'
-               break
-            }
-            case 3: {
-               colorClass = 'green'
-               break
-            }
+         if(line.isHeader) {
+            columnData = `<span class="header"></span>`
+         }
+         else if(line.syllable > 0) {
+            const firstClass = line.verseCount === 1 ? ' first' : ''
+            const nextElement = lines?.[index + 1]
+            const lastClass = nextElement === undefined ||
+                              nextElement?.syllable === 0 ||
+                              nextElement?.isHeader
+                              ? ' last' : ''
+            columnData = `
+               <span class="verseNumber">${line.verseCount}.</span>
+               <span class="syllable">${line.syllable}</span>
+               <span class="buckle${firstClass}${lastClass}">
+            `
          }
 
-         if(line.syllable === 0) {
-            verseCountHTML = ''
-         } else {
-            syllableHTML = `<span class="syllable ${colorClass}">${line.syllable}</span>`
-         }
          let lineHTML = `
-         <div class="line">
+         <div class="line${highlightClass}">
             <div class="column-data">
-               <span class="verseNumber">${verseCountHTML}</span>
-               ${syllableHTML}
+               ${columnData}
             </div>
          </div>
          `
@@ -125,24 +125,28 @@ class TextFormater {
    }
 
    countLineSyllabes (lineOfText) {
-      var temp = 0;
-      var word = lineOfText.match(/\S+/g)
-      if (word != null) {
-         for(var i = 0; i < word.length; i++) {
-            var vowelCount = word[i].match(/[aeiouyąęó]/gi)
+      let temp = 0;
+      const removeComment = lineOfText.split('//')[0].trim()
+      const removeSpecialChars = removeComment.replace(/[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ ]/g, '')
+      const reduceSyllablesCount = removeSpecialChars.replace(/([aeiouyąęó])\1{2,}/gi, '$1')
+         .replace(/(?<=[bcdfghjklmnpqrstvwxyz])([aeiouyąęó])\1(?=[bcdfghjklmnpqrstvwxyz])/gi, '$1$1')
+         .replace(/([aeiouyąęó])\1(?!\w)/gi, '$1');
+      const wordArr = reduceSyllablesCount.match(/\S+/g)
+      if(!wordArr) return temp
+      for(let i = 0; i < wordArr.length; i++) {
+         const vowelCount = wordArr[i].match(/[aeiouyąęó]/gi)
 
-            if (vowelCount != null) {
-               temp += vowelCount.length
-            }
+         if (vowelCount != null) {
+            temp += vowelCount.length
+         }
 
-            var count_of_i = word[i].toLowerCase().split(/[i]/g)
-            if (count_of_i != null && count_of_i.length > 1) {
-               for (var j = 1; j < count_of_i.length; j++) {
-                  var nextLetter = count_of_i[j][0]
-                  if (nextLetter != null) {
-                     if(nextLetter.match(/[aeiouąęó]/gi) != null)
-                        temp--
-                  }
+         const count_of_i = wordArr[i].toLowerCase().split(/[i]/g)
+         if (count_of_i != null && count_of_i.length > 1) {
+            for (let j = 1; j < count_of_i.length; j++) {
+               const nextLetter = count_of_i[j][0]
+               if (nextLetter != null) {
+                  if(nextLetter.match(/[aeiouąęó]/gi) != null)
+                     temp--
                }
             }
          }
