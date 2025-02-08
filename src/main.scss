@@ -4,6 +4,21 @@ $highlight-color: hsl(340, 86%, 3%);
 $font-color: white;
 $border-color: rgba(white, 0.15);
 
+@keyframes scaleY {
+   0% {
+      transform: scaleY(1);
+   }
+   25% {
+      transform: scaleY(1);
+   }
+   75% {
+      transform: scaleY(0);
+   }
+   100% {
+      transform: scaleY(0);
+   }
+ }
+
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 *, *:before, *:after {
@@ -22,6 +37,7 @@ body {
 
 ::selection {
    background-color: $accent-color;
+   color: $font-color;
 }
 
 .wrapper {
@@ -64,6 +80,7 @@ body {
    resize: none;
    font-display: block;
    display: block;
+   color: transparent;
 
    @include scrollbar();
 }
@@ -158,6 +175,43 @@ body {
          }
       }
 
+      .text-highlight {
+         padding-left: 11px;
+         height: 32px;
+         white-space: pre;
+         position: relative;
+         z-index: -1;
+
+         span.header {
+            color: $accent-color;
+            font-weight: 700;
+         }
+
+         span.comment {
+            color: $border-color;
+         }
+
+         .cursor-carret {
+            display: inline;
+            width: 0px;
+            position: relative;
+            z-index: 3;
+            height: 24px;
+
+            &::before {
+               content: "";
+               display: block;
+               position: absolute;
+               width: 1px;
+               height: 32px;
+               top: 0px;
+               left: 0;
+               background-color: yellow;
+               animation: scaleY .4s infinite alternate cubic-bezier(0.4, 0, 0.6, 1);
+            }
+         }
+      }
+
       &.highlight {
          &::before {
             content: "";
@@ -169,7 +223,7 @@ body {
             position: absolute;
             left: 0;
             top: 0;
-            z-index: -1;
+            z-index: -2;
          }
 
          .column-data {

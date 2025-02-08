@@ -10,7 +10,7 @@
     "start": "webpack-dev-server --mode development",
     "serve:prod": "webpack-dev-server --mode production"
   },
-  "author": "",
+  "author": "Marcin Kalinowski",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.5.5",

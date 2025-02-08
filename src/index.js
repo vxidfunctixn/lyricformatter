@@ -5,6 +5,7 @@ class TextFormater {
       this.originalText = document.getElementById('text')
       this.newText = document.getElementById('line-overlay')
       this.activeLine = 0
+      this.activeColumn = 0
 
       let savedText = this.getSavedText()
       if(savedText) {
@@ -20,10 +21,12 @@ class TextFormater {
    }
 
    updateCursorPosition() {
-      const cursorPosition = this.originalText.selectionStart
-      const textBeforeCursor = this.originalText.value.substring(0, cursorPosition)
-      const cursorLine = textBeforeCursor.split("\n").length - 1
-      this.activeLine = cursorLine;
+      const cursorPosition = this.originalText.selectionStart;
+      const textBeforeCursor = this.originalText.value.substring(0, cursorPosition);
+      const lines = textBeforeCursor.split("\n");
+
+      this.activeLine = lines.length - 1;
+      this.activeColumn = lines[lines.length - 1].length;
    }
 
    getSavedText() {
@@ -81,12 +84,32 @@ class TextFormater {
 
       this.updateCursorPosition();
       lines.forEach((line, index) => {
-         const highlightClass = index === this.activeLine ? ' highlight' : '';
+         const isActiveLine = index === this.activeLine
+         const highlightClass = isActiveLine ? ' highlight' : '';
+         const cursorCarret = '<span class="cursor-carret"></span>';
 
          let columnData = `<span class="separator"></span>`
+         let textHighLight = line.text
+
+         if(isActiveLine) {
+            textHighLight = textHighLight.slice(0, this.activeColumn) + cursorCarret + textHighLight.slice(this.activeColumn);
+         }
+
+         const textHighLightCommentArr = textHighLight.split('//')
+         textHighLight = textHighLightCommentArr[0]
+         const textHighLightCommentArr2 = textHighLight.split(`/${cursorCarret}/`)
+         if(textHighLightCommentArr2.length > 1) {
+            textHighLight = `${textHighLightCommentArr2[0]}<span class="comment">/${cursorCarret}/${textHighLightCommentArr2[1]}</span>`
+         }
+         if(textHighLightCommentArr.length > 1) {
+            textHighLight += `<span class="comment">//${textHighLightCommentArr.slice(1).join('//')}</span>`
+         }
+
+
 
          if(line.isHeader) {
             columnData = `<span class="header"></span>`
+            textHighLight = `<span class="header">${textHighLight}</span>`
          }
          else if(line.syllable > 0) {
             const firstClass = line.verseCount === 1 ? ' first' : ''
@@ -107,6 +130,7 @@ class TextFormater {
             <div class="column-data">
                ${columnData}
             </div>
+            <div class="text-highlight">${textHighLight}</div>
          </div>
          `
 
