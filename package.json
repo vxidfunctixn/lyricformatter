@@ -4,11 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build:dev": "webpack --mode development",
-    "build:prod": "webpack --mode production",
-    "serve:dev": "webpack-dev-server --mode development",
-    "start": "webpack-dev-server --mode development",
-    "serve:prod": "webpack-dev-server --mode production"
+    "build": "webpack --mode production",
+    "start": "webpack-dev-server --mode development"
   },
   "author": "Marcin Kalinowski",
   "license": "MIT",
