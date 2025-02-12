@@ -2,27 +2,28 @@ import './main.scss'
 
 class TextFormater {
    constructor() {
-      this.originalText = document.getElementById('text')
-      this.newText = document.getElementById('line-overlay')
+      this.textInput = document.getElementById('text-input')
+      this.textOverlay = document.getElementById('text-overlay')
+      this.lineOverlay = document.getElementById('line-overlay')
       this.activeLine = 0
       this.activeColumn = 0
 
       let savedText = this.getSavedText()
       if(savedText) {
-         this.originalText.value = savedText
+         this.textInput.value = savedText
       }
       this.textChange()
 
-      this.originalText.addEventListener('input', () => this.textChange())
-      this.originalText.addEventListener('selectionchange', () => this.textChange())
-      this.originalText.addEventListener('scroll', () => this.textScroll())
+      this.textInput.addEventListener('input', () => this.textChange())
+      this.textInput.addEventListener('selectionchange', () => this.textChange())
+      this.textInput.addEventListener('scroll', () => this.textScroll())
 
-      this.originalText.focus()
+      this.textInput.focus()
    }
 
    updateCursorPosition() {
-      const cursorPosition = this.originalText.selectionStart;
-      const textBeforeCursor = this.originalText.value.substring(0, cursorPosition);
+      const cursorPosition = this.textInput.selectionStart;
+      const textBeforeCursor = this.textInput.value.substring(0, cursorPosition);
       const lines = textBeforeCursor.split("\n");
 
       this.activeLine = lines.length - 1;
@@ -43,9 +44,10 @@ class TextFormater {
    }
 
    textChange() {
-      document.cookie = "lyrics_text=" + encodeURIComponent(this.originalText.value);
-      let newText = ''
-      let tmpLines = this.originalText.value.split('\n')
+      document.cookie = "lyrics_text=" + encodeURIComponent(this.textInput.value);
+      let lineOverlayHTML = ''
+      let textOverlayHTML = ''
+      let tmpLines = this.textInput.value.split('\n')
       let verseCount = 1
       let versesCount = new Array()
       let lines = new Array()
@@ -105,8 +107,6 @@ class TextFormater {
             textHighLight += `<span class="comment">//${textHighLightCommentArr.slice(1).join('//')}</span>`
          }
 
-
-
          if(line.isHeader) {
             columnData = `<span class="header"></span>`
             textHighLight = `<span class="header">${textHighLight}</span>`
@@ -125,18 +125,19 @@ class TextFormater {
             `
          }
 
-         let lineHTML = `
+         lineOverlayHTML += `
          <div class="line${highlightClass}">
-            <div class="column-data">
-               ${columnData}
-            </div>
-            <div class="text-highlight">${textHighLight}</div>
+            <div class="column-data">${columnData}</div>
          </div>
          `
-
-         newText += lineHTML
+         textOverlayHTML += `
+         <div class="line${highlightClass}">
+            <div class="column-data">${textHighLight}</div>
+         </div>
+         `
       })
-      this.newText.innerHTML = newText
+      this.lineOverlay.innerHTML = lineOverlayHTML
+      this.textOverlay.innerHTML = textOverlayHTML
    }
 
    getAvarangeSyllable(syllable) {
@@ -180,9 +181,14 @@ class TextFormater {
    }
 
    textScroll() {
-      this.newText.scroll({
-         left: this.originalText.scrollLeft,
-         top: this.originalText.scrollTop
+      this.lineOverlay.scroll({
+         left: 0,
+         top: this.textInput.scrollTop
+      })
+
+      this.textOverlay.scroll({
+         left: this.textInput.scrollLeft,
+         top: this.textInput.scrollTop
       })
    }
 }
